@@ -28,7 +28,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late List<TaskModel> datas;
-
+  bool _deleteSwitch = false;
   @override
   void initState() {
     super.initState();
@@ -40,6 +40,15 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(onPressed: (){
+            setState(() {
+              if(_deleteSwitch) {
+                _deleteSwitch = false;
+              }else {
+                _deleteSwitch = true;
+              }
+            });
+          }, icon: Icon(Icons.delete)),
           automaticallyImplyLeading: false,
           actions: [
             TextButton(
@@ -51,6 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text("すべて"),
             ),
 
+            Text("|"),
+
             TextButton(
               onPressed: () {
                 var data = Datas.datas.where((e) => e.check == false).toList();
@@ -60,6 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Text("未完了"),
             ),
+
+            Text("|"),
 
             TextButton(
               onPressed: () {
@@ -97,6 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           subtitle: task.check ? Text("完了！") : Text("未完了"),
                           onTap: () {
+                            _deleteSwitch = false;
                             Navigator.pop(context);
                             Navigator.push(
                               context,
@@ -104,12 +118,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                 builder: (context) => AdjustTask(
                                   title: task.title,
                                   priority: task.priority,
-                                  index: index,
+                                  uniqueKey: task.id,
+                                  check: task.check,
                                 ),
                               ),
                             );
                           },
-                          trailing: Checkbox(
+                          trailing:_deleteSwitch == false? Checkbox(
                             value: task.check,
                             onChanged: (value) {
                               setState(() {
@@ -123,7 +138,40 @@ class _MyHomePageState extends State<MyHomePage> {
                                 }
                               });
                             },
-                          ),
+                          ):
+                              IconButton(onPressed: (){
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('確認'),
+                                      content: const Text('このデータを削除してもよろしいですか？'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          child: const Text('キャンセル'),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: const Text('OK'),
+                                          onPressed: () {
+                                            var removeData = datas.where((e) => e.id == task.id);
+                                            setState(() {
+                                              Datas.datas.remove(removeData.first);
+                                              datas = Datas.datas;
+
+                                            });
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                              }, icon: Icon(Icons.delete_outline))
                         );
                       },
                     ),

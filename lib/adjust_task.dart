@@ -6,12 +6,15 @@ import 'main.dart';
 
 class AdjustTask extends StatefulWidget {
   String title;
-  int priority, index;
+  int priority;
+  bool check;
+  UniqueKey uniqueKey;
 
   AdjustTask({
     required this.title,
     required this.priority,
-    required this.index,
+    required this.uniqueKey,
+    required this.check,
   });
 
   @override
@@ -23,6 +26,7 @@ class AdjustTask extends StatefulWidget {
 class _Adjust extends State<AdjustTask> {
   late TextEditingController _title;
   late int? _selected;
+  late bool _check;
   List<String> tags = Datas.tags;
 
   @override
@@ -31,6 +35,7 @@ class _Adjust extends State<AdjustTask> {
     super.initState();
     _title = TextEditingController(text: widget.title);
     _selected = widget.priority;
+    _check = widget.check;
   }
 
   @override
@@ -45,7 +50,17 @@ class _Adjust extends State<AdjustTask> {
               children: [
                 TextField(
                   controller: _title,
-                  decoration: InputDecoration(label: Text("Task Title")),
+                  decoration: InputDecoration(
+                    label: Text("Task Title"),
+                    suffixIcon: Checkbox(
+                      value: _check,
+                      onChanged: (value) {
+                        setState(() {
+                          _check = value!;
+                        });
+                      },
+                    ),
+                  ),
                 ),
 
                 SizedBox(height: height * 0.05),
@@ -71,17 +86,24 @@ class _Adjust extends State<AdjustTask> {
                     ),
                   ],
                 ),
-
                 ElevatedButton(
                   onPressed: () {
                     if (_title.text.trim().isNotEmpty) {
                       if (_selected != null) {
-                        Datas.datas[widget.index] = TaskModel(
+                        var update_data = TaskModel(
+                          id: widget.uniqueKey,
                           title: _title.text,
-                          check: false,
+                          check: _check,
                           priority: _selected!,
                         );
 
+                        var index = Datas.datas.indexOf(
+                          Datas.datas
+                              .where((e) => e.id == widget.uniqueKey)
+                              .first,
+                        );
+
+                        Datas.datas[index] = update_data;
                         _title.clear();
                         _selected = null;
                         Navigator.pop(context);

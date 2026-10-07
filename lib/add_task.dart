@@ -59,6 +59,7 @@ class _task extends State<AddTask> {
                   if (_selected != null) {
                     Datas.datas.add(
                       TaskModel(
+                        id: UniqueKey(),
                         title: _taskTitle.text,
                         check: false,
                         priority: _selected!,
