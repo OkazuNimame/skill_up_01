@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:skill_up_01/TaskViewModel/task_view_model.dart';
 import 'package:skill_up_01/add_task.dart';
 import 'package:skill_up_01/adjust_task.dart';
-import 'package:skill_up_01/task_model.dart';
+import 'package:skill_up_01/TaskModel/task_model.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TaskViewModel(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -27,34 +34,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late List<TaskModel> datas;
   bool _deleteSwitch = false;
-  @override
-  void initState() {
-    super.initState();
-    datas = Datas.datas;
-  }
+  late List<TaskModel> datas;
 
   @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    datas = Provider.of<TaskViewModel>(context).getTasks();
+  }
+  @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<TaskViewModel>(context);
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(onPressed: (){
-            setState(() {
-              if(_deleteSwitch) {
-                _deleteSwitch = false;
-              }else {
-                _deleteSwitch = true;
-              }
-            });
-          }, icon: Icon(Icons.delete)),
+          leading: IconButton(
+            onPressed: () {
+              setState(() {
+                if (_deleteSwitch) {
+                  _deleteSwitch = false;
+                } else {
+                  _deleteSwitch = true;
+                }
+              });
+            },
+            icon: Icon(Icons.delete),
+          ),
           automaticallyImplyLeading: false,
           actions: [
             TextButton(
               onPressed: () {
                 setState(() {
-                  datas = Datas.datas;
+                  datas = provider.getTasks();
                 });
               },
               child: Text("すべて"),
@@ -64,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
             TextButton(
               onPressed: () {
-                var data = Datas.datas.where((e) => e.check == false).toList();
+                var data = provider.onlyCheckIsFalse();
                 setState(() {
                   datas = data;
                 });
@@ -76,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
             TextButton(
               onPressed: () {
-                var data = Datas.datas.where((e) => e.check == true).toList();
+                var data = provider.onlyCheckIsTrue();
                 setState(() {
                   datas = data;
                 });
@@ -124,54 +136,57 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             );
                           },
-                          trailing:_deleteSwitch == false? Checkbox(
-                            value: task.check,
-                            onChanged: (value) {
-                              setState(() {
-                                task.check = value!;
-                                if (task.check) {
-                                  var data = datas.removeAt(index);
-                                  datas.insert(datas.length, data);
-                                } else {
-                                  var data = datas.removeAt(index);
-                                  datas.insert(0, data);
-                                }
-                              });
-                            },
-                          ):
-                              IconButton(onPressed: (){
-                                showDialog(
-                                  context: context,
-                                  barrierDismissible: true,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: const Text('確認'),
-                                      content: const Text('このデータを削除してもよろしいですか？'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          child: const Text('キャンセル'),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                        ),
-                                        TextButton(
-                                          child: const Text('OK'),
-                                          onPressed: () {
-                                            var removeData = datas.where((e) => e.id == task.id);
-                                            setState(() {
-                                              Datas.datas.remove(removeData.first);
-                                              datas = Datas.datas;
+                          trailing: _deleteSwitch == false
+                              ? Checkbox(
+                                  value: task.check,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      task.check = value!;
+                                      if (task.check) {
+                                        var data = datas.removeAt(index);
+                                        datas.insert(datas.length, data);
+                                      } else {
+                                        var data = datas.removeAt(index);
+                                        datas.insert(0, data);
+                                      }
+                                    });
+                                  },
+                                )
+                              : IconButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Text('確認'),
+                                          content: const Text(
+                                            'このデータを削除してもよろしいですか？',
+                                          ),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              child: const Text('キャンセル'),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            TextButton(
+                                              child: const Text('OK'),
+                                              onPressed: () {
 
-                                            });
-                                            Navigator.pop(context);
-                                          },
-                                        ),
-                                      ],
+                                                setState(() {
+                                                  provider.deleteTask(task.id);
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     );
                                   },
-                                );
-
-                              }, icon: Icon(Icons.delete_outline))
+                                  icon: Icon(Icons.delete_outline),
+                                ),
                         );
                       },
                     ),
@@ -183,9 +198,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        "全タスク：${Datas.datas.length}個\n"
-                        "完了タスク：${Datas.datas.where((e) => e.check).length}個\n"
-                        "未完了タスク：${Datas.datas.where((e) => e.check == false).length}個",
+                        "全タスク：${datas.length}個\n"
+                        "完了タスク：${datas.where((e) => e.check).length}個\n"
+                        "未完了タスク：${datas.where((e) => e.check == false).length}個",
                       ),
                     ),
                   ),
@@ -198,6 +213,5 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class Datas {
-  static List<TaskModel> datas = [];
   static List<String> tags = ["🔴高", "🟡中", "🟢低"];
 }

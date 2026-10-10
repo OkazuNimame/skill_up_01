@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:skill_up_01/task_model.dart';
+import 'package:provider/provider.dart';
+import 'package:skill_up_01/TaskModel/task_model.dart';
+import 'package:skill_up_01/TaskViewModel/task_view_model.dart';
 
 import 'main.dart';
 
@@ -40,6 +42,7 @@ class _Adjust extends State<AdjustTask> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<TaskViewModel>(context);
     double height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
@@ -90,20 +93,16 @@ class _Adjust extends State<AdjustTask> {
                   onPressed: () {
                     if (_title.text.trim().isNotEmpty) {
                       if (_selected != null) {
-                        var update_data = TaskModel(
-                          id: widget.uniqueKey,
-                          title: _title.text,
-                          check: _check,
-                          priority: _selected!,
-                        );
 
-                        var index = Datas.datas.indexOf(
-                          Datas.datas
-                              .where((e) => e.id == widget.uniqueKey)
-                              .first,
+                        provider.updateTask(
+                          TaskModel(
+                            id: widget.uniqueKey,
+                            title: _title.text,
+                            check: _check,
+                            priority: _selected!,
+                          ),
+                          widget.uniqueKey,
                         );
-
-                        Datas.datas[index] = update_data;
                         _title.clear();
                         _selected = null;
                         Navigator.pop(context);

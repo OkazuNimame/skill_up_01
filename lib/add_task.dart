@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:skill_up_01/TaskViewModel/task_view_model.dart';
 import 'package:skill_up_01/main.dart';
-import 'package:skill_up_01/task_model.dart';
+import 'package:skill_up_01/TaskModel/task_model.dart';
 
 class AddTask extends StatefulWidget {
   @override
@@ -11,14 +13,15 @@ class AddTask extends StatefulWidget {
 }
 
 class _task extends State<AddTask> {
+
   int? _selected;
   List<String> tags = Datas.tags;
   TextEditingController _taskTitle = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
-
-
+    final provider = Provider.of<TaskViewModel>(context);
     return SafeArea(
       child: Scaffold(
         body: Column(
@@ -57,7 +60,7 @@ class _task extends State<AddTask> {
               onPressed: () {
                 if (_taskTitle.text.trim().isNotEmpty) {
                   if (_selected != null) {
-                    Datas.datas.add(
+                    provider.addTask(
                       TaskModel(
                         id: UniqueKey(),
                         title: _taskTitle.text,
