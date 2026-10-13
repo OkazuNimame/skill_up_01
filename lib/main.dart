@@ -141,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   value: task.check,
                                   onChanged: (value) {
                                     setState(() {
-                                      task.check = value!;
+                                      provider.toggleTask(task.id, value!);
                                       if (task.check) {
                                         var data = datas.removeAt(index);
                                         datas.insert(datas.length, data);

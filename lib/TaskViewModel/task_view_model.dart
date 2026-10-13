@@ -5,7 +5,7 @@ class TaskViewModel extends ChangeNotifier {
   List<TaskModel> tasks = [];
 
   List<TaskModel> getTasks() {
-    return tasks;
+    return List.unmodifiable(tasks);
   }
 
   void addTask(TaskModel task) {
@@ -18,6 +18,15 @@ class TaskViewModel extends ChangeNotifier {
     if (index != -1) {
       tasks[index] = newTask;
     }
+    notifyListeners();
+  }
+
+  void toggleTask(UniqueKey id, bool check) {
+    final index = tasks.indexWhere((task) => task.id == id);
+
+    if (index == -1) return;
+
+    tasks[index].check = check;
     notifyListeners();
   }
 

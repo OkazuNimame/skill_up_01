@@ -41,6 +41,13 @@ class _Adjust extends State<AdjustTask> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _title.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<TaskViewModel>(context);
     double height = MediaQuery.of(context).size.height;
@@ -103,7 +110,7 @@ class _Adjust extends State<AdjustTask> {
                           ),
                           widget.uniqueKey,
                         );
-                        _title.clear();
+
                         _selected = null;
                         Navigator.pop(context);
                         Navigator.push(

@@ -19,6 +19,13 @@ class _task extends State<AddTask> {
   TextEditingController _taskTitle = TextEditingController();
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _taskTitle.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     final provider = Provider.of<TaskViewModel>(context);
@@ -69,7 +76,6 @@ class _task extends State<AddTask> {
                       ),
                     );
 
-                    _taskTitle.clear();
                     _selected = null;
                     Navigator.pop(context);
                     Navigator.push(
